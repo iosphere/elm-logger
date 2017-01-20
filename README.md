@@ -39,11 +39,10 @@ Please have a look at the example app.
 This package requires native modules. For this reason it is currently not
 available as a community package.
 
-In order to use in your app you should:
+In order to use it in your app you should:
 
 * Copy it to your src folder or include it as a git submodule.
 * Or use a tool such as [elm-github-install](https://github.com/gdotdesign/elm-github-install)
-
 
 Please make sure to enable native-modules in your Elm app by including the
 following value in your `elm-package.json`:
