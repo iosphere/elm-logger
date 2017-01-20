@@ -51,3 +51,7 @@ following value in your `elm-package.json`:
 ```json
     "native-modules": true,
 ```
+
+When adding this package as a submodule or when copying the files, please make
+sure to include `"path-to-elm-logger/src"` in the list of `"source-directories"`
+in your `elm-package.json` file.
