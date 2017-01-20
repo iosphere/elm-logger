@@ -41,7 +41,7 @@ available as a community package.
 
 In order to use it in your app you should:
 
-* Copy it to your src folder or include it as a git submodule.
+* Copy it to your src folder (vendor)
 * Or use a tool such as [elm-github-install](https://github.com/gdotdesign/elm-github-install)
 
 Please make sure to enable native-modules in your Elm app by including the
@@ -51,6 +51,8 @@ following value in your `elm-package.json`:
     "native-modules": true,
 ```
 
-When adding this package as a submodule or when copying the files, please make
-sure to include `"path-to-elm-logger/src"` in the list of `"source-directories"`
-in your `elm-package.json` file.
+When copying the files to your project ensure to update the name of the native
+function `_iosphere$elm_logger$Native_Logger` in [Logger.js](src/Native/Logger.js)
+to match the name of your organization and app. If you get a runtime error
+reading something like `ReferenceError: Can't find variable: _org$appname$Native_Logger`
+you will need to update the Logger.js to reference that name.
