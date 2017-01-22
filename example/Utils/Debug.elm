@@ -16,14 +16,28 @@ log functions to avoid importing `Logger` at the call sites.
 import Logger
 
 
+-- Only needed when using nativeLog to print logs:
+
+import Native.Logger
+
+
+nativeLog : Logger.ExternalLoggingFunction a
+nativeLog level message value =
+    Native.Logger.log (Logger.levelString level) (toColor level) message value
+
+
 {-| Create the Logger.Config used in this app.
 -}
-loggerConfig : Logger.Config
+loggerConfig : Logger.Config a
 loggerConfig =
-    Logger.config Logger.Info
+    -- To use elm logger:
+    -- Logger.defaultConfig Logger.Info
+    -- This uses colored console output via native logger
+    Logger.customConfig Logger.Info nativeLog
 
 
 
+--
 {- We provide convenience log functions to avoid knowledge about
    Utils.Logger at the call site.
 -}
@@ -52,3 +66,22 @@ logWarning =
 logError : String -> a -> a
 logError =
     Logger.log loggerConfig Logger.Error
+
+
+toColor : Logger.Level -> String
+toColor logLevel =
+    case logLevel of
+        Logger.Error ->
+            "red"
+
+        Logger.Warning ->
+            "orange"
+
+        Logger.Info ->
+            "green"
+
+        Logger.Debug ->
+            "purple"
+
+        Logger.Verbose ->
+            "LightBlue"

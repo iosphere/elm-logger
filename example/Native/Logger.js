@@ -1,3 +1,4 @@
+// Make sure to change the function name to match your project.
 var  _iosphere$elm_logger$Native_Logger = function() {
 
 

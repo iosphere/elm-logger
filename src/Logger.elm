@@ -1,15 +1,17 @@
 module Logger
     exposing
         ( Config
+        , ExternalLoggingFunction
         , Level(..)
-        , config
+        , customConfig
+        , defaultConfig
+        , levelString
         , log
         )
 
 {-| This module provides a generic logger with log levels. Logs will only be
 printed if the log level matches or exceeds the minimum log level in the
-Configuration. Log are also displayed colored according to their level in the
-browser's console.
+Configuration.
 
 The package's concept is that some other module in the implementation scope of
 the app implements convenience functions wrapping a `Config` and `Level`s into
@@ -37,10 +39,23 @@ minimum log level. By changing the minimum log level in a central module
 you can silence any logs in code that fall below that level. The above template
 implementation allows you to replace calls to `Debug.log` with `MyUtils.log`.
 
-@docs Config, Level, config, log
--}
+## Configuration
+@docs Level, Config, defaultConfig, levelString
 
-import Native.Logger
+## Logging
+@docs log
+
+## Advanced logging
+
+You can provide a custom `ExternalLoggingFunction` via `customConfig` allowing
+you to replace the default configuration that uses `Debug.log` for printing the
+messages.
+
+The example implementation prints nicely colored code logs to the browser's
+console.
+
+@docs ExternalLoggingFunction, customConfig
+-}
 
 
 {-| Log levels can be used to differentiate between the importance of logs.
@@ -60,80 +75,74 @@ type Level
 At a later stage we might allow to configure the color scheme and
 string representation of the loglevel.
 -}
-config : Level -> Config
-config minimumLevel =
+defaultConfig : Level -> Config a
+defaultConfig minimumLevel =
+    customConfig minimumLevel elmLog
+
+
+{-| A type of function that takes a log level, message, and a value
+to log and prints it to the console. The defaultConfig wrapps
+`Debug.log` to achieve this. If you would like to have colored log messages,
+have a look at the example implementation.
+-}
+type alias ExternalLoggingFunction a =
+    Level -> String -> a -> a
+
+
+{-| A configuration that allows you to provide a custom logging function.
+-}
+customConfig : Level -> ExternalLoggingFunction a -> Config a
+customConfig minimumLevel logFunc =
     Config
-        { minimumLevel = minimumLevel
-        , toColor = toColor
-        , toString = toString
+        { logFunc = logFunc
+        , minimumLevel = minimumLevel
         }
 
 
 {-| Public interface for the configuration to hide the implementation details
 of the internal configuration. Use `config` to create a configuration.
 -}
-type Config
-    = Config InternalConfig
+type Config a
+    = Config (InternalConfig a)
 
 
-type alias InternalConfig =
-    { minimumLevel : Level
-    , toColor : Level -> String
-    , toString : Level -> String
+type alias InternalConfig a =
+    { logFunc : ExternalLoggingFunction a
+    , minimumLevel : Level
     }
 
 
 {-| Logs the given string and value at the provided log level only if it exceeds
 the minimumLevel of the Config. Returns the value provided.
 -}
-log : Config -> Level -> String -> a -> a
+log : Config a -> Level -> String -> a -> a
 log config =
     case config of
         Config internalConfig ->
             internalLog internalConfig
 
 
-internalLog : InternalConfig -> Level -> String -> a -> a
+internalLog : InternalConfig a -> Level -> String -> a -> a
 internalLog config messageLevel message value =
     if toInt messageLevel >= toInt config.minimumLevel then
-        let
-            stringLevel =
-                config.toString messageLevel
-
-            color =
-                config.toColor messageLevel
-        in
-            nativeLog stringLevel color message value
+        config.logFunc messageLevel message value
     else
         value
 
 
-nativeLog : String -> String -> String -> a -> a
-nativeLog level color message value =
-    Native.Logger.log level color message value
+elmLog : Level -> String -> a -> a
+elmLog level message value =
+    let
+        taggedMessage =
+            (levelString level) ++ ": " ++ message
+    in
+        Debug.log taggedMessage value
 
 
-toColor : Level -> String
-toColor logLevel =
-    case logLevel of
-        Error ->
-            "red"
-
-        Warning ->
-            "orange"
-
-        Info ->
-            "green"
-
-        Debug ->
-            "purple"
-
-        Verbose ->
-            "LightBlue"
-
-
-toString : Level -> String
-toString logLevel =
+{-| A string representation for a log level.
+-}
+levelString : Level -> String
+levelString logLevel =
     case logLevel of
         Error ->
             "Error"

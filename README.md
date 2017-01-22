@@ -2,10 +2,7 @@
 
 This package provides a generic logger with log levels. Logs will only be
 printed if the log level matches or exceeds the minimum log level in the
-Configuration. Log are also displayed colored according to their level in the
-browser's console.
-
-![Screenshot of a console log using elm-logger](console.png)
+Configuration.
 
 The package's concept is that some other module in the implementation scope of
 the app implements convenience functions wrapping a Config and Levels into
@@ -17,7 +14,7 @@ single functions. See the following template for an example:
 
     loggerConfig : Logger.Config
     loggerConfig =
-        Logger.config Logger.Info
+        Logger.defaultConfig Logger.Info
 
     log : String -> a -> a
     log =
@@ -27,32 +24,35 @@ single functions. See the following template for an example:
     logVerbose =
         Logger.log loggerConfig Logger.Verbose
 
-The value `loggerConfig` should be created using `Logger.config` with the
+
+The value `loggerConfig` should be created using `Logger.defaultConfig` with the
 minimum log level. By changing the minimum log level in a central module you can
 silence any logs in code that fall below that level. The above template
 implementation allows you to replace calls to `Debug.log` with `MyUtils.log`.
 
 Please have a look at the example app.
 
-## Installation
+## Advanced: color coded console logs
 
-This package requires native modules. For this reason it is currently not
-available as a community package.
+You can provide a custom `ExternalLoggingFunction` via `customConfig` allowing
+you to replace the default configuration that uses `Debug.log` for printing the
+messages.
 
-In order to use it in your app you should:
+![Screenshot of a console log using elm-logger](console.png)
 
-* Copy it to your src folder (vendor)
-* Or use a tool such as [elm-github-install](https://github.com/gdotdesign/elm-github-install)
+The example implementation prints nicely colored code logs to the browser's
+console.
 
-Please make sure to enable native-modules in your Elm app by including the
-following value in your `elm-package.json`:
+When using the native example implementation in your project, ensure to update
+the name of the native function `_iosphere$elm_logger$Native_Logger`
+in [Logger.js](src/example/Native/Logger.js) to match the name of your
+organization and app. If you get a runtime error reading something like
+`ReferenceError: Can't find variable: _org$appname$Native_Logger`
+you will need to update the Logger.js to reference that name.
+
+You will also need to enable native module's for your elm project by including
+the following value in your `elm-package.json`:
 
 ```json
     "native-modules": true,
 ```
-
-When copying the files to your project ensure to update the name of the native
-function `_iosphere$elm_logger$Native_Logger` in [Logger.js](src/Native/Logger.js)
-to match the name of your organization and app. If you get a runtime error
-reading something like `ReferenceError: Can't find variable: _org$appname$Native_Logger`
-you will need to update the Logger.js to reference that name.
