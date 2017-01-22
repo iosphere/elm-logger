@@ -38,7 +38,7 @@ You can provide a custom `ExternalLoggingFunction` via `customConfig` allowing
 you to replace the default configuration that uses `Debug.log` for printing the
 messages.
 
-![Screenshot of a console log using elm-logger](console.png)
+![Screenshot of a console log using elm-logger](https://github.com/iosphere/elm-logger/raw/1.0.1/console.png)
 
 The example implementation prints nicely colored code logs to the browser's
 console.
